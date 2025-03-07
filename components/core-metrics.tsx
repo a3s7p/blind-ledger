@@ -95,7 +95,7 @@ export function CoreMetrics({ className }: { className?: string }) {
             className="w-full mt-2"
             onClick={handleMoreClick}
           >
-            Test NilDB <ArrowRight className="ml-2 h-4 w-4" />
+            More <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </CardContent>

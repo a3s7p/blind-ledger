@@ -36,7 +36,12 @@ const orgConfig = {
 };
 
 const ORG: SecretVaultWrapper = await (async () => {
-  const org = new SecretVaultWrapper(orgConfig.nodes, orgConfig.orgCredentials);
+  const org = new SecretVaultWrapper(
+    orgConfig.nodes,
+    orgConfig.orgCredentials,
+    null,
+    "sum",
+  );
   await org.init();
 
   if (orgConfig.schemaId) {
@@ -145,6 +150,5 @@ export async function readTxs() {
 }
 
 export async function appendTx(amount: number) {
-  // this fails
   await ORG.writeToNodes([{ amount: { "%allot": amount }, test: 1 }]);
 }

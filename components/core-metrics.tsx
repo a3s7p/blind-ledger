@@ -36,8 +36,6 @@ export function CoreMetrics({ className }: { className?: string }) {
     if (tabsElement) {
       tabsElement.click();
     }
-    // TEMP
-    appendTx(1).then(() => readTxs().then((v) => console.log(v)));
   };
 
   const metrics = [

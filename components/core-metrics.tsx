@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, DollarSign, Percent } from "lucide-react";
 import { useTransactions } from "@/contexts/transaction-context";
-import { appendTx, readTxs } from "@/app/actions";
+import { appendTxs, readSums } from "@/app/actions";
 
 export function CoreMetrics({ className }: { className?: string }) {
   const { transactions } = useTransactions();
@@ -27,7 +27,7 @@ export function CoreMetrics({ className }: { className?: string }) {
     totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
 
   // Function to switch to Reports tab
-  const handleMoreClick = () => {
+  const handleMoreClick = async () => {
     // Find the tabs element and set its value to "reports"
     const tabsElement = document.querySelector(
       '[data-radix-collection-item][data-state="inactive"][value="reports"]',
@@ -36,6 +36,12 @@ export function CoreMetrics({ className }: { className?: string }) {
     if (tabsElement) {
       tabsElement.click();
     }
+
+    // TEMP
+    console.log(await appendTxs(transactions));
+
+    const sums = await readSums();
+    console.log(sums);
   };
 
   const metrics = [

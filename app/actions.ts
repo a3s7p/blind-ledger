@@ -1,12 +1,9 @@
 "use server";
 
+// @ts-ignore
 import { SecretVaultWrapper } from "secretvaults";
 import schema from "@/schema.json" with { type: "json" };
-
-type Tx = {
-  _id: string;
-  amount: number;
-};
+import { Transaction } from "@/lib/utils";
 
 // public demo config
 const orgConfig = {
@@ -59,11 +56,25 @@ const ORG: SecretVaultWrapper = await (async () => {
 
 export async function readTxs() {
   try {
+    const txs: Transaction[] = await ORG.readFromNodes();
+    console.log("Read txs:", txs);
+
+    return txs.map((tx) => ({
+      ...tx,
+      amount: Number(tx.amount),
+    }));
+  } catch (e) {
+    console.log(e);
+    return [];
+  }
+}
+
+export async function readSums() {
+  try {
     const results = [];
     const newQueryId = crypto.randomUUID();
 
-    const readData: Tx[] = await ORG.readFromNodes();
-    console.log(readData);
+    console.log("Attempting sum query...");
 
     for (const node of orgConfig.nodes) {
       const jwt = await ORG.generateNodeToken(node.did);
@@ -71,18 +82,18 @@ export async function readTxs() {
       try {
         const result = await ORG.makeRequest(node.url, "queries", jwt, {
           _id: newQueryId,
-          name: "test query",
+          name: "sum query",
           schema: orgConfig.schemaId,
           variables: {
-            test: {
-              type: "number",
-              description: "test",
+            draft: {
+              type: "boolean",
+              description: "draft",
             },
           },
           pipeline: [
             {
               $match: {
-                test: "##test",
+                draft: "##draft",
               },
             },
             {
@@ -120,6 +131,7 @@ export async function readTxs() {
           ],
         });
         results.push({ ...result, node });
+        orgConfig.queryId = newQueryId;
       } catch (error: any) {
         console.error(`❌ Failed from ${node.url}:`, error.message);
         results.push({ error, node });
@@ -132,7 +144,7 @@ export async function readTxs() {
       try {
         const result = await ORG.makeRequest(node.url, "queries/execute", jwt, {
           id: newQueryId,
-          variables: { test: 1 },
+          variables: { draft: false },
         });
         results.push({ ...result, node });
       } catch (error: any) {
@@ -141,7 +153,7 @@ export async function readTxs() {
       }
     }
 
-    console.log(results);
+    console.log("Executed sum query:", results);
     return results;
   } catch (e) {
     console.log(e);
@@ -149,6 +161,21 @@ export async function readTxs() {
   }
 }
 
-export async function appendTx(amount: number) {
-  await ORG.writeToNodes([{ amount: { "%allot": amount }, test: 1 }]);
+export async function appendTx(tx: Transaction) {
+  await appendTxs([tx]);
+}
+
+export async function appendTxs(txs: Transaction[]) {
+  try {
+    const withAllots = txs.map((tx) => ({
+      ...tx,
+      // encode datetime to string
+      date: tx.date.toISOString(),
+      amount: { "%allot": tx.amount },
+    }));
+
+    await ORG.writeToNodes(withAllots);
+  } catch (error: any) {
+    console.error(`❌ Failed`, error.message);
+  }
 }

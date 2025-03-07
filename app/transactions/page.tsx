@@ -1,11 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { format } from "date-fns"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react";
+import { format } from "date-fns";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -13,86 +26,97 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Plus, Pencil, Trash2, Search, Clipboard, Check } from "lucide-react"
-import { useTransactions } from "@/contexts/transaction-context"
-import { TransactionDialog } from "@/components/transaction-dialog"
-import { TransactionDeleteDialog } from "@/components/transaction-delete-dialog"
-import { formatCurrency, accountTypes, type Transaction } from "@/lib/utils"
-import { toast } from "sonner"
+} from "@/components/ui/pagination";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Pencil, Trash2, Search, Clipboard, Check } from "lucide-react";
+import { useTransactions } from "@/contexts/transaction-context";
+import { TransactionDialog } from "@/components/transaction-dialog";
+import { TransactionDeleteDialog } from "@/components/transaction-delete-dialog";
+import { formatCurrency, accountTypes, type Transaction } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function TransactionsPage() {
-  const { transactions } = useTransactions()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [accountFilter, setAccountFilter] = useState("all")
-  const [currencyFilter, setCurrencyFilter] = useState("all")
-  const [draftFilter, setDraftFilter] = useState("all")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | undefined>(undefined)
-  const [copiedHash, setCopiedHash] = useState<string | null>(null)
+  const { transactions } = useTransactions();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [accountFilter, setAccountFilter] = useState("all");
+  const [currencyFilter, setCurrencyFilter] = useState("all");
+  const [draftFilter, setDraftFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<
+    Transaction | undefined
+  >(undefined);
+  const [copiedHash, setCopiedHash] = useState<string | null>(null);
 
-  const itemsPerPage = 10
+  const itemsPerPage = 10;
 
   // Filter transactions based on search term and filters
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch =
       searchTerm === "" ||
       transaction.partner.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      (transaction.description &&
+        transaction.description
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()));
 
     const matchesAccount =
       accountFilter === "all" ||
       transaction.debitAccount === accountFilter ||
-      transaction.creditAccount === accountFilter
+      transaction.creditAccount === accountFilter;
 
-    const matchesCurrency = currencyFilter === "all" || transaction.currency === currencyFilter
+    const matchesCurrency =
+      currencyFilter === "all" || transaction.currency === currencyFilter;
 
     const matchesDraft =
       draftFilter === "all" ||
       (draftFilter === "draft" && transaction.draft) ||
-      (draftFilter === "active" && !transaction.draft)
+      (draftFilter === "active" && !transaction.draft);
 
-    return matchesSearch && matchesAccount && matchesCurrency && matchesDraft
-  })
+    return matchesSearch && matchesAccount && matchesCurrency && matchesDraft;
+  });
 
   // Sort transactions by date (newest first)
-  const sortedTransactions = [...filteredTransactions].sort((a, b) => b.date.getTime() - a.date.getTime())
+  const sortedTransactions = [...filteredTransactions].sort(
+    (a, b) => b.date.getTime() - a.date.getTime(),
+  );
 
   // Paginate transactions
-  const totalPages = Math.ceil(sortedTransactions.length / itemsPerPage)
-  const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  const totalPages = Math.ceil(sortedTransactions.length / itemsPerPage);
+  const paginatedTransactions = sortedTransactions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   const handleEdit = (transaction: Transaction) => {
-    setSelectedTransaction(transaction)
-    setEditDialogOpen(true)
-  }
+    setSelectedTransaction(transaction);
+    setEditDialogOpen(true);
+  };
 
   const handleDelete = (transaction: Transaction) => {
-    setSelectedTransaction(transaction)
-    setDeleteDialogOpen(true)
-  }
+    setSelectedTransaction(transaction);
+    setDeleteDialogOpen(true);
+  };
 
   const handleCopyHash = (hash: string) => {
     navigator.clipboard.writeText(hash).then(() => {
-      setCopiedHash(hash)
-      toast.success("Hash copied to clipboard")
+      setCopiedHash(hash);
+      toast.success("Hash copied to clipboard");
 
       // Reset after 2 seconds
       setTimeout(() => {
-        setCopiedHash(null)
-      }, 2000)
-    })
-  }
+        setCopiedHash(null);
+      }, 2000);
+    });
+  };
 
   const getAccountName = (accountId: string) => {
-    const account = accountTypes.find((acc) => acc.id === accountId)
-    return account ? `${account.number} - ${account.name}` : accountId
-  }
+    const account = accountTypes.find((acc) => acc.id === accountId);
+    return account ? `${account.number} - ${account.name}` : accountId;
+  };
 
   return (
     <div className="space-y-6">
@@ -106,7 +130,11 @@ export default function TransactionsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Select value={accountFilter} onValueChange={setAccountFilter} className="w-auto">
+        <Select
+          value={accountFilter}
+          onValueChange={setAccountFilter}
+          className="w-auto"
+        >
           <SelectTrigger className="w-auto min-w-[140px]">
             <SelectValue placeholder="Filter by account" />
           </SelectTrigger>
@@ -119,7 +147,11 @@ export default function TransactionsPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={currencyFilter} onValueChange={setCurrencyFilter} className="w-auto">
+        <Select
+          value={currencyFilter}
+          onValueChange={setCurrencyFilter}
+          className="w-auto"
+        >
           <SelectTrigger className="w-auto min-w-[120px]">
             <SelectValue placeholder="Filter by currency" />
           </SelectTrigger>
@@ -129,7 +161,11 @@ export default function TransactionsPage() {
             <SelectItem value="EUR">€ EUR</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={draftFilter} onValueChange={setDraftFilter} className="w-auto">
+        <Select
+          value={draftFilter}
+          onValueChange={setDraftFilter}
+          className="w-auto"
+        >
           <SelectTrigger className="w-auto min-w-[120px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -161,13 +197,21 @@ export default function TransactionsPage() {
             </TableHeader>
             <TableBody>
               {paginatedTransactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{format(transaction.date, "MMM d, yyyy")}</TableCell>
+                <TableRow key={transaction._id}>
+                  <TableCell>
+                    {format(transaction.date, "MMM d, yyyy")}
+                  </TableCell>
                   <TableCell>{transaction.partner}</TableCell>
                   <TableCell>{transaction.description || "-"}</TableCell>
-                  <TableCell>{formatCurrency(transaction.amount, transaction.currency)}</TableCell>
-                  <TableCell>{getAccountName(transaction.debitAccount)}</TableCell>
-                  <TableCell>{getAccountName(transaction.creditAccount)}</TableCell>
+                  <TableCell>
+                    {formatCurrency(transaction.amount, transaction.currency)}
+                  </TableCell>
+                  <TableCell>
+                    {getAccountName(transaction.debitAccount)}
+                  </TableCell>
+                  <TableCell>
+                    {getAccountName(transaction.creditAccount)}
+                  </TableCell>
                   <TableCell>
                     {transaction.draft ? (
                       <Badge
@@ -200,7 +244,12 @@ export default function TransactionsPage() {
                       )}
                       <span className="sr-only">Copy Hash</span>
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(transaction)} className="mr-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(transaction)}
+                      className="mr-1"
+                    >
                       <Pencil className="h-4 w-4" />
                       <span className="sr-only">Edit</span>
                     </Button>
@@ -241,14 +290,19 @@ export default function TransactionsPage() {
             </PaginationItem>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <PaginationItem key={page}>
-                <PaginationLink onClick={() => setCurrentPage(page)} isActive={currentPage === page}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(page)}
+                  isActive={currentPage === page}
+                >
                   {page}
                 </PaginationLink>
               </PaginationItem>
             ))}
             <PaginationItem>
               <PaginationNext
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
                 disabled={currentPage === totalPages}
               />
             </PaginationItem>
@@ -256,7 +310,11 @@ export default function TransactionsPage() {
         </Pagination>
       )}
 
-      <TransactionDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} mode="create" />
+      <TransactionDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        mode="create"
+      />
 
       {selectedTransaction && (
         <>
@@ -269,11 +327,10 @@ export default function TransactionsPage() {
           <TransactionDeleteDialog
             open={deleteDialogOpen}
             onOpenChange={setDeleteDialogOpen}
-            transactionId={selectedTransaction.id}
+            transactionId={selectedTransaction._id}
           />
         </>
       )}
     </div>
-  )
+  );
 }
-

@@ -10,8 +10,22 @@
         "format": "uuid",
         "coerce": true
       },
-      "test": {
-        "type": "integer"
+      "date": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "partner": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "currency": {
+        "type": "string",
+        "enum": [
+          "USD",
+          "EUR"
+        ]
       },
       "amount": {
         "type": "object",
@@ -23,12 +37,46 @@
         "required": [
           "%share"
         ]
+      },
+      "debitAccount": {
+        "type": "string",
+        "enum": [
+          "assets",
+          "income",
+          "liabilities",
+          "expenses"
+        ]
+      },
+      "creditAccount": {
+        "type": "string",
+        "enum": [
+          "assets",
+          "income",
+          "liabilities",
+          "expenses"
+        ]
+      },
+      "draft": {
+        "type": "boolean"
+      },
+      "hash": {
+        "type": "string"
+      },
+      "previousHash": {
+        "type": "string"
       }
     },
     "required": [
       "_id",
-      "test",
-      "amount"
+      "date",
+      "partner",
+      "currency",
+      "amount",
+      "debitAccount",
+      "creditAccount",
+      "draft",
+      "hash",
+      "previousHash"
     ]
   }
 }
